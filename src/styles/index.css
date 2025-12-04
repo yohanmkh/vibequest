@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cyber-bg text-white font-mono;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  #root {
+    width: 100vw;
+    height: 100vh;
+  }
+}
+
+@layer utilities {
+  .cyber-border {
+    @apply border border-cyber-border;
+  }
+
+  .cyber-glow {
+    box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+  }
+
+  .cyber-glow-strong {
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.6);
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 217, 255, 0.3) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 217, 255, 0.3);
+    border-radius: 3px;
+  }
+}
+
