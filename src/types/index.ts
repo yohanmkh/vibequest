@@ -9,6 +9,12 @@ export interface GameResources {
   coffee: number;
   xp: number;
   level: number;
+  // Enhanced stats
+  techDebt: number;
+  aiTrust: number;
+  codeQuality: number;
+  burnoutRisk: number;
+  deploymentReadiness: number;
 }
 
 export interface GameState {
