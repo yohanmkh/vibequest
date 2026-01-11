@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from './store/gameStore';
 import { useAuthStore } from './store/authStore';
 import { useEnhancedGameEngine } from './hooks/useEnhancedGameEngine';
-import { HUD } from './components/HUD';
+import { useEnhancedFeatures } from './hooks/useEnhancedFeatures';
+import { EnhancedHUD } from './components/EnhancedHUD';
 import { ClassSelector } from './components/ClassSelector';
 import { EnhancedIDE } from './components/EnhancedIDE';
 import { StepByStepView } from './components/StepByStepView';
@@ -14,6 +15,8 @@ import { AIToolGuide } from './components/AIToolGuide';
 import { LoginForm } from './components/LoginForm';
 import { RegisterForm } from './components/RegisterForm';
 import { UserProfile } from './components/UserProfile';
+import { DecisionModal } from './components/DecisionModal';
+import { VerificationModal } from './components/VerificationModal';
 
 type AuthView = 'login' | 'register';
 type View = 'auth' | 'setup' | 'game';
@@ -23,6 +26,21 @@ function App() {
   const { isAuthenticated, user, updateUser } = useAuthStore();
   const { playerClass, platform, stack, resources, completedTasks } = useGameStore();
   const { currentStep, getCurrentCurriculum, fileSystem } = useEnhancedGameEngine();
+  
+  // Pass current step to get context-aware challenges
+  const {
+    currentDecision,
+    currentVerification,
+    availableDecisionTypes,
+    availableVerificationTypes,
+    handleDecisionSelect,
+    handleVerificationComplete,
+    handleVerificationSkip,
+    triggerDecision,
+    triggerVerification,
+    triggerStepDecision,
+    triggerStepVerification,
+  } = useEnhancedFeatures({ currentStep });
 
   const [authView, setAuthView] = useState<AuthView>('login');
   const [view, setView] = useState<View>('auth');
@@ -138,7 +156,7 @@ function App() {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-cyber-bg relative">
-      {isAuthenticated && <HUD />}
+      {isAuthenticated && <EnhancedHUD resources={resources} />}
 
       <AnimatePresence mode="wait">
         {view === 'auth' ? (
@@ -206,31 +224,82 @@ function App() {
             className="h-full pt-20 flex flex-col"
           >
             {/* View Toggle */}
-            <div className="flex items-center justify-center gap-2 p-2 border-b border-cyber-border">
-              <motion.button
-                onClick={() => setGameView('steps')}
-                className={`px-4 py-2 rounded text-sm font-semibold ${
-                  gameView === 'steps'
-                    ? 'bg-cyber-primary text-black'
-                    : 'bg-cyber-surface text-gray-400'
-                }`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Learning Path
-              </motion.button>
-              <motion.button
-                onClick={() => setGameView('ide')}
-                className={`px-4 py-2 rounded text-sm font-semibold ${
-                  gameView === 'ide'
-                    ? 'bg-cyber-primary text-black'
-                    : 'bg-cyber-surface text-gray-400'
-                }`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                IDE & Code
-              </motion.button>
+            <div className="flex items-center justify-between gap-2 p-2 border-b border-cyber-border">
+              <div className="flex items-center gap-2">
+                <motion.button
+                  onClick={() => setGameView('steps')}
+                  className={`px-4 py-2 rounded text-sm font-semibold ${
+                    gameView === 'steps'
+                      ? 'bg-cyber-primary text-black'
+                      : 'bg-cyber-surface text-gray-400'
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Learning Path
+                </motion.button>
+                <motion.button
+                  onClick={() => setGameView('ide')}
+                  className={`px-4 py-2 rounded text-sm font-semibold ${
+                    gameView === 'ide'
+                      ? 'bg-cyber-primary text-black'
+                      : 'bg-cyber-surface text-gray-400'
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  IDE & Code
+                </motion.button>
+              </div>
+              
+              {/* Test Buttons - Step-specific and generic options */}
+              <div className="flex items-center gap-2">
+                {/* Primary: Step-specific challenges */}
+                <button
+                  onClick={triggerStepDecision}
+                  className="px-3 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 font-medium"
+                  title={currentStep ? `Decision for: ${currentStep.title}` : 'Select a step first'}
+                >
+                  🎯 Step Decision
+                </button>
+                <button
+                  onClick={triggerStepVerification}
+                  className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"
+                  title={currentStep ? `Verification for: ${currentStep.title}` : 'Select a step first'}
+                >
+                  ✓ Step Verification
+                </button>
+                
+                {/* Divider */}
+                <span className="text-gray-500">|</span>
+                
+                {/* Secondary: Generic type-based */}
+                <select
+                  onChange={(e) => e.target.value && triggerDecision(e.target.value as any)}
+                  className="px-2 py-1 text-xs bg-purple-900/50 text-purple-300 rounded cursor-pointer border border-purple-700"
+                  defaultValue=""
+                >
+                  <option value="" disabled>More...</option>
+                  {availableDecisionTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+                <select
+                  onChange={(e) => e.target.value && triggerVerification(e.target.value as any)}
+                  className="px-2 py-1 text-xs bg-blue-900/50 text-blue-300 rounded cursor-pointer border border-blue-700"
+                  defaultValue=""
+                >
+                  <option value="" disabled>More...</option>
+                  {availableVerificationTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+                
+                {/* Current step indicator */}
+                <span className="text-xs text-gray-400 max-w-[200px] truncate" title={currentStep?.title}>
+                  {currentStep ? `📍 ${currentStep.title}` : '(no step selected)'}
+                </span>
+              </div>
             </div>
 
             {/* Main Content */}
@@ -246,7 +315,11 @@ function App() {
                       exit={{ opacity: 0, x: 20 }}
                       className="flex-1 overflow-hidden"
                     >
-                      <StepByStepView onStepSelect={(stepId) => setSelectedStepId(stepId)} />
+                      <StepByStepView 
+                        onStepSelect={(stepId) => setSelectedStepId(stepId)}
+                        onTriggerDecision={triggerDecision}
+                        onTriggerVerification={triggerVerification}
+                      />
                     </motion.div>
                   ) : (
                     <motion.div
@@ -292,6 +365,21 @@ function App() {
           onClose={() => setTutorialMessage(null)}
         />
       )}
+
+      {/* Decision Modal */}
+      <DecisionModal
+        decision={currentDecision}
+        isOpen={!!currentDecision}
+        onSelect={handleDecisionSelect}
+      />
+
+      {/* Verification Modal */}
+      <VerificationModal
+        challenge={currentVerification}
+        isOpen={!!currentVerification}
+        onComplete={handleVerificationComplete}
+        onSkip={handleVerificationSkip}
+      />
     </div>
   );
 }

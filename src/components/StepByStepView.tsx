@@ -4,23 +4,39 @@ import { MicroStep } from '../types/enhanced';
 import { useEnhancedGameEngine } from '../hooks/useEnhancedGameEngine';
 import { useGameStore } from '../store/gameStore';
 
+type DecisionType = 'scope-creep' | 'ai-review' | 'testing-approach' | 'tech-choice';
+type VerificationType = 'state-management' | 'component-structure' | 'spot-the-bug' | 'predict-output';
+
 interface StepByStepViewProps {
   onStepSelect?: (stepId: string) => void;
+  onTriggerDecision?: (type?: DecisionType) => void;
+  onTriggerVerification?: (type?: VerificationType) => void;
 }
 
-export function StepByStepView({ onStepSelect }: StepByStepViewProps) {
+export function StepByStepView({ onStepSelect, onTriggerDecision, onTriggerVerification }: StepByStepViewProps) {
   const { getCurrentCurriculum, currentStep, startStep, completeCurrentStep, validateStep } =
     useEnhancedGameEngine();
   const { completedTasks, resources } = useGameStore();
 
   const curriculum = getCurrentCurriculum();
-  const currentStepIndex = currentStep
-    ? curriculum.findIndex((s) => s.id === currentStep.id)
-    : -1;
 
   const handleStepClick = (step: MicroStep) => {
     if (step.status === 'available' || step.status === 'in-progress') {
       startStep(step.id);
+      
+      // Trigger context-aware decisions based on step type
+      if (onTriggerDecision) {
+        // Match step type to appropriate decision
+        if (step.type === 'code-generation') {
+          onTriggerDecision('scope-creep'); // Scope management decision
+        } else if (step.type === 'code-review') {
+          onTriggerDecision('ai-review'); // AI code review decision
+        } else if (step.type === 'testing') {
+          onTriggerDecision('testing-approach'); // Testing decision
+        } else if (step.type === 'deployment' || step.type === 'configuration') {
+          onTriggerDecision('tech-choice'); // Technical decision
+        }
+      }
     }
   };
 
@@ -28,6 +44,22 @@ export function StepByStepView({ onStepSelect }: StepByStepViewProps) {
     if (currentStep) {
       const validation = validateStep(currentStep);
       if (validation.valid) {
+        // Trigger context-aware verification based on step type
+        if (onTriggerVerification) {
+          if (currentStep.type === 'code-generation') {
+            // Randomly choose between state-management and component-structure
+            const verType = Math.random() > 0.5 ? 'state-management' : 'component-structure';
+            onTriggerVerification(verType);
+            return; // Don't complete yet - wait for verification
+          } else if (currentStep.type === 'code-review') {
+            onTriggerVerification('spot-the-bug');
+            return;
+          } else if (currentStep.type === 'testing') {
+            onTriggerVerification('predict-output');
+            return;
+          }
+        }
+        
         completeCurrentStep();
       } else {
         // Show validation errors
@@ -38,7 +70,7 @@ export function StepByStepView({ onStepSelect }: StepByStepViewProps) {
 
   const isStepUnlocked = (step: MicroStep): boolean => {
     if (step.status === 'available' || step.status === 'in-progress') return true;
-    if (!step.dependsOn) return step.status === 'available';
+    if (!step.dependsOn) return true;
     return step.dependsOn.every((depId) => completedTasks.includes(depId));
   };
 

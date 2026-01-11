@@ -22,6 +22,12 @@ const initialResources: GameResources = {
   coffee: 50,
   xp: 0,
   level: 1,
+  // NEW: Enhanced stats
+  techDebt: 0,
+  aiTrust: 75,
+  codeQuality: 50,
+  burnoutRisk: 0,
+  deploymentReadiness: 100,
 };
 
 const initialState: GameState = {
