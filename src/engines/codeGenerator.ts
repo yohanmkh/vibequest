@@ -1,5 +1,5 @@
 // Code generation engine that simulates AI code generation
-import { CodeTemplate, GeneratedCode, FileDefinition } from '../types/enhanced';
+import { CodeTemplate, GeneratedCode } from '../types/enhanced';
 
 export class CodeGenerator {
   private codeTemplates: Map<string, CodeTemplate> = new Map();
@@ -127,7 +127,7 @@ describe('{ComponentName}', () => {
   /**
    * Generate code based on a prompt (simulated AI response)
    */
-  generateFromPrompt(prompt: string, context: any): GeneratedCode[] {
+  generateFromPrompt(prompt: string, _context: unknown): GeneratedCode[] {
     const results: GeneratedCode[] = [];
     
     // Analyze prompt and generate appropriate code
@@ -184,7 +184,7 @@ describe('{ComponentName}', () => {
   /**
    * Generate a realistic error based on code
    */
-  generateError(code: string, errorType: 'syntax' | 'type' | 'runtime' | 'logic'): string {
+  generateError(_code: string, errorType: 'syntax' | 'type' | 'runtime' | 'logic'): string {
     const errors = {
       syntax: "SyntaxError: Unexpected token '}'",
       type: "TypeError: Cannot read property 'map' of undefined",

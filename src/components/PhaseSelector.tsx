@@ -9,7 +9,7 @@ interface PhaseSelectorProps {
 }
 
 export function PhaseSelector({ onTaskSelect }: PhaseSelectorProps) {
-  const { currentPhase, playerClass, platform, stack } = useGameStore();
+  const { currentPhase } = useGameStore();
   const { getCurrentCurriculum } = useGameEngine();
 
   const curriculum = getCurrentCurriculum();

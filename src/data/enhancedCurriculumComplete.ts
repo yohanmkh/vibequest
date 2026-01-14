@@ -200,7 +200,7 @@ const aiToolConfigs = {
 
 // Function to create complete curriculum
 function createCurriculum(
-  classType: 'vibe-surfer' | 'co-pilot' | '10x-architect',
+  _classType: 'vibe-surfer' | 'co-pilot' | '10x-architect',
   platform: 'web' | 'mobile',
   stack: 'react-node' | 'flutter-firebase' | 'nextjs-prisma'
 ): MicroStep[] {

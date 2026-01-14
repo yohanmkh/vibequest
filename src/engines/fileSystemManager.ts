@@ -11,7 +11,7 @@ export class FileSystemManager {
   /**
    * Initialize file system with project structure
    */
-  initializeProject(stack: string): FileSystemState {
+  initializeProject(_stack: string): FileSystemState {
     const baseStructure: FileNode[] = [
       {
         path: 'src',

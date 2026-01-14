@@ -1,4 +1,4 @@
-import { Curriculum, Task, PhaseData } from '../types';
+import { Curriculum } from '../types';
 
 export const curricula: Curriculum[] = [
   // Vibe Surfer - Web - React/Node

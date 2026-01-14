@@ -8,7 +8,7 @@ interface IDEProps {
   onVibeCheck: (prompt: string) => void;
 }
 
-export function IDE({ task, onVibeCheck }: IDEProps) {
+export function IDE({ onVibeCheck }: IDEProps) {
   const [prompt, setPrompt] = useState('');
   const [chatHistory, setChatHistory] = useState<Array<{ role: 'user' | 'ai'; message: string }>>([]);
   const [files, setFiles] = useState([

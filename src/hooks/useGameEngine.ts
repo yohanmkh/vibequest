@@ -8,7 +8,6 @@ export function useGameEngine() {
     playerClass,
     platform,
     stack,
-    currentPhase,
     resources,
     consumeCoffee,
     consumeSanity,
@@ -74,7 +73,7 @@ export function useGameEngine() {
 
   const checkAnswer = useCallback(
     (
-      taskId: string,
+      _taskId: string,
       answer: number | string,
       correctAnswer: number | string,
       coffeeCost: number
