@@ -55,9 +55,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setCurrentTaskIndex: (index) => set({ currentTaskIndex: index }),
 
   updateResources: (updates) =>
-    set((state) => ({
-      resources: { ...state.resources, ...updates },
-    })),
+    set((state) => {
+      const newResources = { ...state.resources, ...updates };
+      
+      // Auto level-up based on XP (100 XP per level)
+      if (updates.xp !== undefined) {
+        const newLevel = Math.floor(newResources.xp / 100) + 1;
+        newResources.level = newLevel;
+      }
+      
+      return { resources: newResources };
+    }),
 
   addToInventory: (item) =>
     set((state) => ({

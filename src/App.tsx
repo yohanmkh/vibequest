@@ -25,7 +25,7 @@ type GameView = 'steps' | 'ide';
 function App() {
   const { isAuthenticated, user, updateUser } = useAuthStore();
   const { playerClass, platform, stack, resources, completedTasks } = useGameStore();
-  const { currentStep, getCurrentCurriculum, fileSystem } = useEnhancedGameEngine();
+  const { currentStep, getCurrentCurriculum, fileSystem, completeCurrentStep } = useEnhancedGameEngine();
   
   // Pass current step to get context-aware challenges
   const {
@@ -40,7 +40,7 @@ function App() {
     triggerVerification,
     triggerStepDecision,
     triggerStepVerification,
-  } = useEnhancedFeatures({ currentStep });
+  } = useEnhancedFeatures({ currentStep, onStepCompleted: completeCurrentStep });
 
   const [authView, setAuthView] = useState<AuthView>('login');
   const [view, setView] = useState<View>('auth');
@@ -73,6 +73,7 @@ function App() {
         updateUser({ stats: newStats });
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isAuthenticated, resources.xp, resources.level, completedTasks.length, playerClass, platform, stack]);
 
   // Redirect based on auth state - this is the main routing logic
@@ -86,6 +87,7 @@ function App() {
         setView('auth');
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]); // Only depend on isAuthenticated
 
   // Get the step to display in AI Tool Guide (currentStep or selectedStep or first available)
@@ -110,7 +112,7 @@ function App() {
     if (!fileSystem?.files) return undefined;
     
     // Find App.tsx or main component file
-    const findFileContent = (nodes: any[]): string | null => {
+    const findFileContent = (nodes: { type: string; path: string; content?: string; children?: typeof nodes }[]): string | null => {
       for (const node of nodes) {
         if (node.type === 'file' && (node.path.includes('App.tsx') || node.path.includes('App.jsx') || node.path.includes('main.dart'))) {
           return node.content || null;
@@ -127,7 +129,7 @@ function App() {
     if (!appContent) return undefined;
     
     // Count generated files
-    const countFiles = (nodes: any[]): number => {
+    const countFiles = (nodes: { type: string; children?: typeof nodes }[]): number => {
       let count = 0;
       for (const node of nodes) {
         if (node.type === 'file') count++;
@@ -275,9 +277,10 @@ function App() {
                 
                 {/* Secondary: Generic type-based */}
                 <select
-                  onChange={(e) => e.target.value && triggerDecision(e.target.value as any)}
+                  onChange={(e) => e.target.value && triggerDecision(e.target.value as 'scope-creep' | 'ai-review' | 'testing-approach' | 'tech-choice')}
                   className="px-2 py-1 text-xs bg-purple-900/50 text-purple-300 rounded cursor-pointer border border-purple-700"
                   defaultValue=""
+                  aria-label="Select decision type"
                 >
                   <option value="" disabled>More...</option>
                   {availableDecisionTypes.map(type => (
@@ -285,9 +288,10 @@ function App() {
                   ))}
                 </select>
                 <select
-                  onChange={(e) => e.target.value && triggerVerification(e.target.value as any)}
+                  onChange={(e) => e.target.value && triggerVerification(e.target.value as 'state-management' | 'component-structure' | 'spot-the-bug' | 'predict-output')}
                   className="px-2 py-1 text-xs bg-blue-900/50 text-blue-300 rounded cursor-pointer border border-blue-700"
                   defaultValue=""
+                  aria-label="Select verification type"
                 >
                   <option value="" disabled>More...</option>
                   {availableVerificationTypes.map(type => (
@@ -318,7 +322,6 @@ function App() {
                       <StepByStepView 
                         onStepSelect={(stepId) => setSelectedStepId(stepId)}
                         onTriggerDecision={triggerDecision}
-                        onTriggerVerification={triggerVerification}
                       />
                     </motion.div>
                   ) : (

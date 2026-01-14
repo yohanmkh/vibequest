@@ -23,6 +23,7 @@ import {
 
 interface UseEnhancedFeaturesProps {
   currentStep?: MicroStep | null;
+  onStepCompleted?: () => void; // Callback to trigger full step completion
 }
 
 export function useEnhancedFeatures(props?: UseEnhancedFeaturesProps) {
@@ -30,13 +31,17 @@ export function useEnhancedFeatures(props?: UseEnhancedFeaturesProps) {
   const [currentDecision, setCurrentDecision] = useState<DecisionPoint | null>(null);
   const [currentVerification, setCurrentVerification] = useState<VerificationChallenge | null>(null);
 
+  // Destructure props for use in callbacks
+  const currentStep = props?.currentStep;
+  const onStepCompleted = props?.onStepCompleted;
+
   // Build game context for dynamic challenges
   const gameContext = useMemo(() => ({
     playerClass,
     platform,
     stack,
-    currentStep: props?.currentStep || null,
-  }), [playerClass, platform, stack, props?.currentStep]);
+    currentStep: currentStep || null,
+  }), [playerClass, platform, stack, currentStep]);
 
   // Get available challenge types for current context
   const availableDecisionTypes = useMemo(
@@ -95,6 +100,12 @@ export function useEnhancedFeatures(props?: UseEnhancedFeaturesProps) {
         xp: resources.xp + currentVerification.xpReward,
         aiTrust: Math.min(100, resources.aiTrust + currentVerification.aiTrustBonus),
       });
+      
+      // Complete the current step after passing verification
+      if (onStepCompleted) {
+        onStepCompleted();
+        console.log('✅ Step completion triggered');
+      }
     } else {
       updateResources({
         sanity: Math.max(0, resources.sanity - 10),
@@ -102,7 +113,7 @@ export function useEnhancedFeatures(props?: UseEnhancedFeaturesProps) {
     }
     
     setCurrentVerification(null);
-  }, [currentVerification, resources, updateResources]);
+  }, [currentVerification, resources, updateResources, onStepCompleted]);
 
   const handleVerificationSkip = useCallback(() => {
     console.log('⏭️ Verification skipped - applying penalty');
@@ -120,7 +131,7 @@ export function useEnhancedFeatures(props?: UseEnhancedFeaturesProps) {
       class: playerClass, 
       platform, 
       stack, 
-      step: props?.currentStep?.title 
+      step: currentStep?.title 
     });
     
     let decision: DecisionPoint;
@@ -132,7 +143,7 @@ export function useEnhancedFeatures(props?: UseEnhancedFeaturesProps) {
     
     console.log('🎯 Generated decision:', decision.title);
     setCurrentDecision(decision);
-  }, [gameContext, playerClass, platform, stack, props?.currentStep?.title]);
+  }, [gameContext, playerClass, platform, stack, currentStep?.title]);
 
   // Trigger a specific type of verification with current context
   const triggerVerification = useCallback((type?: 'state-management' | 'component-structure' | 'spot-the-bug' | 'predict-output') => {
@@ -141,7 +152,7 @@ export function useEnhancedFeatures(props?: UseEnhancedFeaturesProps) {
       class: playerClass, 
       platform, 
       stack, 
-      step: props?.currentStep?.title 
+      step: currentStep?.title 
     });
     
     let verification: VerificationChallenge;
@@ -153,7 +164,7 @@ export function useEnhancedFeatures(props?: UseEnhancedFeaturesProps) {
     
     console.log('✓ Generated verification:', verification.title);
     setCurrentVerification(verification);
-  }, [gameContext, playerClass, platform, stack, props?.currentStep?.title]);
+  }, [gameContext, playerClass, platform, stack, currentStep?.title]);
 
   // Trigger random decision appropriate for current step
   const triggerRandomDecision = useCallback(() => {
@@ -171,51 +182,51 @@ export function useEnhancedFeatures(props?: UseEnhancedFeaturesProps) {
 
   // NEW: Trigger step-specific decision (based on current step)
   const triggerStepDecision = useCallback(() => {
-    if (!props?.currentStep) {
+    if (!currentStep) {
       console.log('⚠️ No current step, using random decision');
       return triggerRandomDecision();
     }
     
     const decision = getDecisionForStep({
-      step: props.currentStep,
+      step: currentStep,
       playerClass,
       platform,
       stack,
     });
     
     if (decision) {
-      console.log('📋 Step-specific decision for:', props.currentStep.title);
+      console.log('📋 Step-specific decision for:', currentStep.title);
       console.log('🎯 Decision:', decision.title);
       setCurrentDecision(decision);
     } else {
       console.log('⚠️ No decision for this step, using random');
       triggerRandomDecision();
     }
-  }, [props?.currentStep, playerClass, platform, stack, triggerRandomDecision]);
+  }, [currentStep, playerClass, platform, stack, triggerRandomDecision]);
 
   // NEW: Trigger step-specific verification (based on current step)
   const triggerStepVerification = useCallback(() => {
-    if (!props?.currentStep) {
+    if (!currentStep) {
       console.log('⚠️ No current step, using random verification');
       return triggerRandomVerification();
     }
     
     const verification = getVerificationForStep({
-      step: props.currentStep,
+      step: currentStep,
       playerClass,
       platform,
       stack,
     });
     
     if (verification) {
-      console.log('📋 Step-specific verification for:', props.currentStep.title);
+      console.log('📋 Step-specific verification for:', currentStep.title);
       console.log('✓ Verification:', verification.title);
       setCurrentVerification(verification);
     } else {
       console.log('⚠️ No verification for this step, using random');
       triggerRandomVerification();
     }
-  }, [props?.currentStep, playerClass, platform, stack, triggerRandomVerification]);
+  }, [currentStep, playerClass, platform, stack, triggerRandomVerification]);
 
   return {
     // State
@@ -226,7 +237,7 @@ export function useEnhancedFeatures(props?: UseEnhancedFeaturesProps) {
     availableDecisionTypes,
     availableVerificationTypes,
     gameContext,
-    currentStep: props?.currentStep,
+    currentStep: currentStep,
     
     // Actions
     handleDecisionSelect,

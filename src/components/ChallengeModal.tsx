@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle2, XCircle } from 'lucide-react';
-import { Task, Challenge } from '../types';
+import { Task } from '../types';
 import { useState } from 'react';
 
 interface ChallengeModalProps {
@@ -57,6 +57,7 @@ export function ChallengeModal({ task, isOpen, onClose, onComplete }: ChallengeM
               <button
                 onClick={onClose}
                 className="text-gray-400 hover:text-white transition-colors"
+                aria-label="Close modal"
               >
                 <X className="w-6 h-6" />
               </button>

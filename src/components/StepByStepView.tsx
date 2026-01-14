@@ -5,15 +5,13 @@ import { useEnhancedGameEngine } from '../hooks/useEnhancedGameEngine';
 import { useGameStore } from '../store/gameStore';
 
 type DecisionType = 'scope-creep' | 'ai-review' | 'testing-approach' | 'tech-choice';
-type VerificationType = 'state-management' | 'component-structure' | 'spot-the-bug' | 'predict-output';
 
 interface StepByStepViewProps {
   onStepSelect?: (stepId: string) => void;
   onTriggerDecision?: (type?: DecisionType) => void;
-  onTriggerVerification?: (type?: VerificationType) => void;
 }
 
-export function StepByStepView({ onStepSelect, onTriggerDecision, onTriggerVerification }: StepByStepViewProps) {
+export function StepByStepView({ onStepSelect, onTriggerDecision }: StepByStepViewProps) {
   const { getCurrentCurriculum, currentStep, startStep, completeCurrentStep, validateStep } =
     useEnhancedGameEngine();
   const { completedTasks, resources } = useGameStore();
@@ -44,22 +42,7 @@ export function StepByStepView({ onStepSelect, onTriggerDecision, onTriggerVerif
     if (currentStep) {
       const validation = validateStep(currentStep);
       if (validation.valid) {
-        // Trigger context-aware verification based on step type
-        if (onTriggerVerification) {
-          if (currentStep.type === 'code-generation') {
-            // Randomly choose between state-management and component-structure
-            const verType = Math.random() > 0.5 ? 'state-management' : 'component-structure';
-            onTriggerVerification(verType);
-            return; // Don't complete yet - wait for verification
-          } else if (currentStep.type === 'code-review') {
-            onTriggerVerification('spot-the-bug');
-            return;
-          } else if (currentStep.type === 'testing') {
-            onTriggerVerification('predict-output');
-            return;
-          }
-        }
-        
+        // Directly complete the step without verification test
         completeCurrentStep();
       } else {
         // Show validation errors
