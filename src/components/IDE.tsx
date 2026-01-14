@@ -119,6 +119,7 @@ export function IDE({ onVibeCheck }: IDEProps) {
               <button
                 onClick={handleSend}
                 className="p-1 bg-cyber-primary text-black rounded hover:bg-cyber-primary/80"
+                aria-label="Send message"
               >
                 <Send className="w-4 h-4" />
               </button>
